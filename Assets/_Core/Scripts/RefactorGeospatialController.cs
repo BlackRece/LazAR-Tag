@@ -204,7 +204,7 @@ namespace BlackRece.LaSARTag.Geospatial
         private bool _isLocalizing = false;
         private bool _enablingGeospatial = false;
         private bool _shouldResolvingHistory = false;
-        private bool _usingTerrainAnchor = false;
+        private bool _usingTerrainAnchor = true;
         private float _localizationPassedTime = 0f;
         private float _configurePrepareTime = 3f;
         private List<AnchorParams> _historyCollection = null;
@@ -294,7 +294,7 @@ namespace BlackRece.LaSARTag.Geospatial
         /// <param name="enabled">Whether to enable terrain anchors.</param>
         public void OnTerrainToggled(bool enabled)
         {
-            _usingTerrainAnchor = enabled;
+            //_usingTerrainAnchor = enabled;
         }
 
         /// <summary>
@@ -620,7 +620,8 @@ namespace BlackRece.LaSARTag.Geospatial
                 /*GeospatialAnchorHistory history = new GeospatialAnchorHistory(
                     geospatialPose.Latitude, geospatialPose.Longitude, geospatialPose.Altitude,
                     geospatialPose.EunRotation);*/
-                var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+                //var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+                ARGeospatialAnchor anchor = PlaceTerrainAnchor(history);
                 if (anchor != null)
                     _historyCollection.Add(history);
                     //_historyCollection.Collection.Add(history);
