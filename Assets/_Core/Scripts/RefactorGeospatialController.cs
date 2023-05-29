@@ -16,8 +16,11 @@ namespace BlackRece.LaSARTag.Geospatial
     /// <summary>
     /// Controller for Geospatial sample.
     /// </summary>
-    [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:ParameterMustNotSpanMultipleLines",
-        Justification = "Bypass source check.")]
+    [SuppressMessage(
+        "StyleCop.CSharp.ReadabilityRules",
+        "SA1118:ParameterMustNotSpanMultipleLines",
+        Justification = "Bypass source check.")
+    ]
     public class RefactorGeospatialController : MonoBehaviour
     {
         [Header("AR Components")]
@@ -204,9 +207,11 @@ namespace BlackRece.LaSARTag.Geospatial
         private bool _usingTerrainAnchor = false;
         private float _localizationPassedTime = 0f;
         private float _configurePrepareTime = 3f;
-        //private GeospatialAnchorHistoryCollection _historyCollection = null;
         private List<AnchorParams> _historyCollection = null;
         private List<GameObject> _anchorObjects = new List<GameObject>();
+        private Color _inRangeColor = new Color(0.0f, 1.0f, 0.0f, 1f);
+        private Color _outOfRangeColor = new Color(1.0f, 0.0f, 0.0f, 1f);
+        private Camera _Camera;
         private IEnumerator _startLocationService = null;
         private IEnumerator _asyncCheck = null;
 
@@ -266,14 +271,15 @@ namespace BlackRece.LaSARTag.Geospatial
         /// </summary>
         public void OnSetAnchorClicked()
         {
-            var pose = EarthManager.CameraGeospatialPose;
-            var eunRotation = pose.EunRotation;
+            GeospatialPose pose = EarthManager.CameraGeospatialPose;
+            Quaternion eunRotation = pose.EunRotation;
             /*GeospatialAnchorHistory history = new GeospatialAnchorHistory(
                 pose.Latitude, pose.Longitude, pose.Altitude, eunRotation);*/
             var history = new AnchorParams(
                 pose.Latitude, pose.Longitude, pose.Altitude, eunRotation);
 
-            var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+            //var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+            ARGeospatialAnchor anchor = PlaceTerrainAnchor(history);
             if (anchor != null)
                 _historyCollection.Add(history);
                 //_historyCollection.Collection.Add(history);
@@ -321,6 +327,8 @@ namespace BlackRece.LaSARTag.Geospatial
             {
                 Debug.LogError("Cannot find ARCoreExtensions.");
             }
+            
+            _Camera = Camera.main;
         }
 
         /// <summary>
@@ -507,7 +515,24 @@ namespace BlackRece.LaSARTag.Geospatial
                         continue;
                     }
 
+                    var distanceToAnchor = Vector3.Distance(
+                        _Camera.gameObject.transform.position,
+                        go.transform.position);
+                    var goRenderer = go.GetComponent<Renderer>();
+                    goRenderer.material.color = Color.Lerp(
+                        Color.red, Color.green, (distanceToAnchor - 1) / 4);
+                    
+                    /*if(distanceToAnchor > 1 && distanceToAnchor < 5)
+                    {
+                        go.SetActive(true);
+                    }
+                    else
+                    {
+                        go.SetActive(false);
+                    }*/
                     go.SetActive(true);
+                    
+                    
                 }
 
                 ResolveHistory();
@@ -615,7 +640,7 @@ namespace BlackRece.LaSARTag.Geospatial
                     Quaternion.AngleAxis(180f - (float)anchorData.Heading, Vector3.up);
             }
 
-            var anchor = terrain ?
+            ARGeospatialAnchor anchor = terrain ?
                 AnchorManager.ResolveAnchorOnTerrain(
                     anchorData.Latitude, anchorData.Longitude, 0, eunRotation) :
                 AnchorManager.AddAnchor(
@@ -646,6 +671,24 @@ namespace BlackRece.LaSARTag.Geospatial
             return anchor;
         }
 
+        private ARGeospatialAnchor PlaceTerrainAnchor(AnchorParams anchorData)
+        {
+            ARGeospatialAnchor anchor = AnchorManager.ResolveAnchorOnTerrain(
+                anchorData.Latitude, anchorData.Longitude, 0, anchorData.EunRotation);
+            if (anchor != null)
+            {
+                GameObject anchorGO = Instantiate(TerrainPrefab, anchor.transform);
+                _anchorObjects.Add(anchorGO);
+                StartCoroutine(CheckTerrainAnchorState(anchor));
+                SnackBarText.text = $"{_anchorObjects.Count} Terrain Anchor(s) Set!";
+            }
+            else
+            {
+                SnackBarText.text = "Failed to set a terrain anchor!";
+            }
+
+            return anchor;
+        }
         private void ResolveHistory()
         {
             if (!_shouldResolvingHistory)
