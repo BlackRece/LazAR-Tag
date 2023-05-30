@@ -865,14 +865,14 @@ MonoBehaviour:
   RaycastManager: {fileID: 691323913}
   EarthManager: {fileID: 691323912}
   ARCoreExtensions: {fileID: 1476232295}
-  GeospatialPrefab: {fileID: 5831908950388203684, guid: f09a13e3d47394ab588884ffd124d732,
+  GeospatialPrefab: {fileID: 5831908950388203684, guid: b06df86095d56994f8001a6573ad131c,
     type: 3}
-  TerrainPrefab: {fileID: 5831908950388203684, guid: a46bc1cf69cc345ba81f34525c7e1b09,
+  TerrainPrefab: {fileID: 5831908950388203684, guid: 282a2227489329e41b16ab00f349c4a2,
     type: 3}
   PrivacyPromptCanvas: {fileID: 782365343}
   VPSCheckCanvas: {fileID: 61745207}
   ARViewCanvas: {fileID: 1041456683}
-  ARGameCanvas: {fileID: 0}
+  ARGameCanvas: {fileID: 1338867573}
   ClearAllButton: {fileID: 1782521151}
   SetAnchorButton: {fileID: 1803953558}
   TerrainToggle: {fileID: 1816815738}
@@ -880,8 +880,8 @@ MonoBehaviour:
   InfoText: {fileID: 1587000028}
   SnackBarText: {fileID: 1382347801}
   DebugText: {fileID: 1664493018}
-  _invalidMaterial: {fileID: 2100000, guid: 9345d029f3cee4d919588c56a2e6e25e, type: 2}
-  _validMaterial: {fileID: 2100000, guid: e2a1bbe7300932446a9d3340830dcebd, type: 2}
+  _invalidMaterial: {fileID: 2100000, guid: ae9c07ab58a7d30428c40aceeb116c31, type: 2}
+  _validMaterial: {fileID: 2100000, guid: 3eba2d37f33ea47498ab101d2aae8e8d, type: 2}
 --- !u!1 &430750537
 GameObject:
   m_ObjectHideFlags: 0
@@ -1136,7 +1136,20 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 562762532}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 384014293}
+        m_TargetAssemblyTypeName: BlackRece.LaSARTag.Geospatial.RefactorGeospatialController,
+          LasAR_Tag
+        m_MethodName: OnReadyClicked
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &562762532
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2303,7 +2316,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1041456683}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd4e5e252fdfa402780fee0e2a14a4db, type: 3}
+  m_Script: {fileID: 11500000, guid: e9753731a61a4c40b176e338fbd88c4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1074335149
@@ -4131,8 +4144,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
+      - m_Target: {fileID: 384014293}
+        m_TargetAssemblyTypeName: BlackRece.LaSARTag.Geospatial.RefactorGeospatialController,
+          LasAR_Tag
         m_MethodName: OnClearAllClicked
         m_Mode: 1
         m_Arguments:
@@ -4440,8 +4454,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
+      - m_Target: {fileID: 384014293}
+        m_TargetAssemblyTypeName: BlackRece.LaSARTag.Geospatial.RefactorGeospatialController,
+          LasAR_Tag
         m_MethodName: OnSetAnchorClicked
         m_Mode: 1
         m_Arguments:
@@ -4575,7 +4590,20 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 384014293}
+        m_TargetAssemblyTypeName: BlackRece.LaSARTag.Geospatial.RefactorGeospatialController,
+          LasAR_Tag
+        m_MethodName: OnTerrainToggled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_IsOn: 0
 --- !u!1 &1871546258
 GameObject:
@@ -4966,7 +4994,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1997625404}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 384014290}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1997625404
 MonoBehaviour:
   m_ObjectHideFlags: 0

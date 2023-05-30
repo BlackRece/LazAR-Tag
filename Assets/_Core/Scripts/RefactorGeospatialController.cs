@@ -341,6 +341,8 @@ namespace BlackRece.LaSARTag.Geospatial
             }
             
             _Camera = Camera.main;
+            
+            ARGameCanvas.SetActive(false);
         }
 
         /// <summary>
@@ -769,12 +771,16 @@ namespace BlackRece.LaSARTag.Geospatial
         private void SwitchToARView(bool enable)
         {
             _isInARView = enable;
+            _isInARGame = !enable;
+            ARViewCanvas.SetActive(_isInARView);
+            ARGameCanvas.SetActive(_isInARGame);
+            
             SessionOrigin.gameObject.SetActive(enable);
             Session.gameObject.SetActive(enable);
             ARCoreExtensions.gameObject.SetActive(enable);
-            ARViewCanvas.SetActive(enable);
             PrivacyPromptCanvas.SetActive(!enable);
             VPSCheckCanvas.SetActive(false);
+            
             if (enable && _asyncCheck == null)
             {
                 _asyncCheck = AvailabilityCheck();
