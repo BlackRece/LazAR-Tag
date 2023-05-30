@@ -83,6 +83,11 @@ namespace BlackRece.LaSARTag.Geospatial
         public GameObject ARViewCanvas;
 
         /// <summary>
+        /// UI element containing all AR game contents.
+        /// </summary>
+        public GameObject ARGameCanvas;
+        
+        /// <summary>
         /// UI element for clearing all anchors, including history.
         /// </summary>
         public Button ClearAllButton;
@@ -200,6 +205,7 @@ namespace BlackRece.LaSARTag.Geospatial
 
         private bool _waitingForLocationService = false;
         private bool _isInARView = false;
+        private bool _isInARGame = false;
         private bool _isReturning = false;
         private bool _isLocalizing = false;
         private bool _enablingGeospatial = false;
@@ -211,6 +217,8 @@ namespace BlackRece.LaSARTag.Geospatial
         private List<GameObject> _anchorObjects = new List<GameObject>();
         private Color _inRangeColor = new Color(0.0f, 1.0f, 0.0f, 1f);
         private Color _outOfRangeColor = new Color(1.0f, 0.0f, 0.0f, 1f);
+        [SerializeField] private Material _invalidMaterial = null;
+        [SerializeField] private Material _validMaterial = null;
         private Camera _Camera;
         private IEnumerator _startLocationService = null;
         private IEnumerator _asyncCheck = null;
@@ -272,13 +280,9 @@ namespace BlackRece.LaSARTag.Geospatial
         public void OnSetAnchorClicked()
         {
             GeospatialPose pose = EarthManager.CameraGeospatialPose;
-            Quaternion eunRotation = pose.EunRotation;
-            /*GeospatialAnchorHistory history = new GeospatialAnchorHistory(
-                pose.Latitude, pose.Longitude, pose.Altitude, eunRotation);*/
             var history = new AnchorParams(
-                pose.Latitude, pose.Longitude, pose.Altitude, eunRotation);
+                pose.Latitude, pose.Longitude, pose.Altitude, pose.EunRotation);
 
-            //var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
             ARGeospatialAnchor anchor = PlaceTerrainAnchor(history);
             if (anchor != null)
                 _historyCollection.Add(history);
@@ -286,6 +290,14 @@ namespace BlackRece.LaSARTag.Geospatial
 
             ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
             SaveGeospatialAnchorHistory();
+        }
+        
+        /// <summary>
+        /// Callback handing "Ready" button click event in AR View.
+        /// </summary>
+        public void OnReadyClicked()
+        {
+            SwitchToARGame(true);
         }
 
         /// <summary>
@@ -504,9 +516,11 @@ namespace BlackRece.LaSARTag.Geospatial
                 TerrainToggle.gameObject.SetActive(true);
                 ClearAllButton.gameObject.SetActive(_anchorObjects.Count > 0);
                 SnackBarText.text = _localizationSuccessMessage;
+
                 foreach (var go in _anchorObjects)
                 {
-                    var terrainState = go.GetComponent<ARGeospatialAnchor>().terrainAnchorState;
+                    var terrainAnchor = go.GetComponent<ARGeospatialAnchor>(); 
+                    var terrainState = terrainAnchor.terrainAnchorState;
                     if (terrainState != TerrainAnchorState.None &&
                         terrainState != TerrainAnchorState.Success)
                     {
@@ -515,24 +529,23 @@ namespace BlackRece.LaSARTag.Geospatial
                         continue;
                     }
 
-                    var distanceToAnchor = Vector3.Distance(
-                        _Camera.gameObject.transform.position,
-                        go.transform.position);
-                    var goRenderer = go.GetComponent<Renderer>();
-                    goRenderer.material.color = Color.Lerp(
-                        Color.red, Color.green, (distanceToAnchor - 1) / 4);
                     
-                    /*if(distanceToAnchor > 1 && distanceToAnchor < 5)
-                    {
-                        go.SetActive(true);
+                    var distanceToAnchor = Vector3.Distance(
+                        _Camera.transform.position,
+                        terrainAnchor.transform.position);
+                    var goRenderer = go.GetComponent<Renderer>();
+                    /*goRenderer.material.color = Color.Lerp(
+                        Color.red, Color.green, (distanceToAnchor - 1) / 4);*/
+                    
+                    // DOES NOT WORK!!!
+                    if(distanceToAnchor < 1.0f) {//}> 1 && distanceToAnchor < 5) {
+                        goRenderer.material = _validMaterial;
                     }
                     else
                     {
-                        go.SetActive(false);
-                    }*/
+                        goRenderer.material= _invalidMaterial;
+                    }
                     go.SetActive(true);
-                    
-                    
                 }
 
                 ResolveHistory();
@@ -767,6 +780,14 @@ namespace BlackRece.LaSARTag.Geospatial
                 _asyncCheck = AvailabilityCheck();
                 StartCoroutine(_asyncCheck);
             }
+        }
+        
+        private void SwitchToARGame(bool enable)
+        {
+            _isInARGame = enable;
+            _isInARView = !enable;
+            ARViewCanvas.SetActive(!enable);
+            ARGameCanvas.SetActive(enable);
         }
 
         private IEnumerator AvailabilityCheck()
