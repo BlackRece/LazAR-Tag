@@ -212,7 +212,7 @@ namespace BlackRece.LaSARTag.Geospatial
         private bool _isLocalizing = false;
         private bool _enablingGeospatial = false;
         private bool _shouldResolvingHistory = false;
-        private bool _usingTerrainAnchor = true;
+        private bool _usingTerrainAnchor = false;
         private float _localizationPassedTime = 0f;
         private float _configurePrepareTime = 3f;
         private List<AnchorParams> _historyCollection = null;
@@ -317,7 +317,7 @@ namespace BlackRece.LaSARTag.Geospatial
         /// <param name="enabled">Whether to enable terrain anchors.</param>
         public void OnTerrainToggled(bool enabled)
         {
-            //_usingTerrainAnchor = enabled;
+            _usingTerrainAnchor = enabled;
         }
 
         /// <summary>
@@ -646,7 +646,7 @@ namespace BlackRece.LaSARTag.Geospatial
 
         private void PlaceAnchorByScreenTap(Vector2 position)
         {
-            List<ARRaycastHit> hitResults = new List<ARRaycastHit>();
+            var hitResults = new List<ARRaycastHit>();
             RaycastManager.Raycast(
                 position, hitResults, TrackableType.Planes | TrackableType.FeaturePoint);
             if (hitResults.Count > 0)
@@ -658,8 +658,8 @@ namespace BlackRece.LaSARTag.Geospatial
                 /*GeospatialAnchorHistory history = new GeospatialAnchorHistory(
                     geospatialPose.Latitude, geospatialPose.Longitude, geospatialPose.Altitude,
                     geospatialPose.EunRotation);*/
-                //var anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
-                ARGeospatialAnchor anchor = PlaceTerrainAnchor(history);
+                ARGeospatialAnchor anchor = PlaceGeospatialAnchor(history, _usingTerrainAnchor);
+                //ARGeospatialAnchor anchor = PlaceTerrainAnchor(history);
                 if (anchor != null)
                     _historyCollection.Add(history);
                     //_historyCollection.Collection.Add(history);
