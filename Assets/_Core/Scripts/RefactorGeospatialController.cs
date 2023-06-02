@@ -87,6 +87,8 @@ namespace BlackRece.LaSARTag.Geospatial
         /// </summary>
         public GameObject ARGameCanvas;
         
+        public GameObject ReadyButton;
+        
         /// <summary>
         /// UI element for clearing all anchors, including history.
         /// </summary>
@@ -219,7 +221,11 @@ namespace BlackRece.LaSARTag.Geospatial
         private Color _outOfRangeColor = new Color(1.0f, 0.0f, 0.0f, 1f);
         [SerializeField] private Material _invalidMaterial = null;
         [SerializeField] private Material _validMaterial = null;
-        private Camera _Camera;
+        
+        [SerializeField] private GameObject _ProjectilePrefab;
+        private ProjectilePooler.ProjectilePooler _pooler;
+        
+        [SerializeField] private Camera _Camera = null;
         private IEnumerator _startLocationService = null;
         private IEnumerator _asyncCheck = null;
 
@@ -299,6 +305,11 @@ namespace BlackRece.LaSARTag.Geospatial
         {
             SwitchToARGame(true);
         }
+        
+        public void OnReturnClicked()
+        {
+            SwitchToARGame(false);
+        }
 
         /// <summary>
         /// Callback handling "Terrain" toggle event in AR View.
@@ -340,9 +351,8 @@ namespace BlackRece.LaSARTag.Geospatial
                 Debug.LogError("Cannot find ARCoreExtensions.");
             }
             
-            _Camera = Camera.main;
-            
-            ARGameCanvas.SetActive(false);
+            _pooler = GetComponent<ProjectilePooler.ProjectilePooler>();
+            _pooler.Init(_ProjectilePrefab);
         }
 
         /// <summary>
@@ -361,6 +371,9 @@ namespace BlackRece.LaSARTag.Geospatial
             ClearAllButton.gameObject.SetActive(false);
             DebugText.gameObject.SetActive(Debug.isDebugBuild && EarthManager != null);
             TerrainToggle.onValueChanged.AddListener(OnTerrainToggled);
+            
+            ReadyButton.SetActive(false);
+            ARGameCanvas.SetActive(false);
 
             _localizationPassedTime = 0f;
             _isLocalizing = true;
@@ -399,10 +412,18 @@ namespace BlackRece.LaSARTag.Geospatial
         /// </summary>
         public void Update()
         {
-            if (!_isInARView)
+            
+            if (_isInARGame)
             {
-                return;
+                if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began) {
+                    _pooler
+                        .GetGameObject()
+                        .GetComponent<Projectile>()
+                        .Init(_Camera.transform);
+                }
             }
+            if (!_isInARView)
+                return;
 
             UpdateDebugInfo();
 
@@ -552,31 +573,33 @@ namespace BlackRece.LaSARTag.Geospatial
 
                 ResolveHistory();
             }
-            else if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began
-                && !EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId))
+            else if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             {
-                // Set anchor on screen tap.
-                PlaceAnchorByScreenTap(Input.GetTouch(0).position);
+                if (!EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId)) {
+                    // Set anchor on screen tap.
+                    PlaceAnchorByScreenTap(Input.GetTouch(0).position);
+                } 
             }
 
+            ReadyButton.SetActive(_anchorObjects.Count > 0);
             InfoPanel.SetActive(true);
-            if (earthTrackingState == TrackingState.Tracking)
-            {
+            if (earthTrackingState == TrackingState.Tracking) {
                 InfoText.text = string.Format(
-                "Latitude/Longitude: {1}°, {2}°{0}" +
-                "Horizontal Accuracy: {3}m{0}" +
-                "Altitude: {4}m{0}" +
-                "Vertical Accuracy: {5}m{0}" +
-                "Eun Rotation: {6}{0}" +
-                "Orientation Yaw Accuracy: {7}°",
-                Environment.NewLine,
-                pose.Latitude.ToString("F6"),
-                pose.Longitude.ToString("F6"),
-                pose.HorizontalAccuracy.ToString("F6"),
-                pose.Altitude.ToString("F2"),
-                pose.VerticalAccuracy.ToString("F2"),
-                pose.EunRotation.ToString("F1"),
-                pose.OrientationYawAccuracy.ToString("F1"));
+                    "Latitude/Longitude: {1}°, {2}°{0}" +
+                    "Horizontal Accuracy: {3}m{0}" +
+                    "Altitude: {4}m{0}" +
+                    "Vertical Accuracy: {5}m{0}" +
+                    "Eun Rotation: {6}{0}" +
+                    "Orientation Yaw Accuracy: {7}°",
+                    Environment.NewLine,
+                    pose.Latitude.ToString("F6"),
+                    pose.Longitude.ToString("F6"),
+                    pose.HorizontalAccuracy.ToString("F6"),
+                    pose.Altitude.ToString("F2"),
+                    pose.VerticalAccuracy.ToString("F2"),
+                    pose.EunRotation.ToString("F1"),
+                    pose.OrientationYawAccuracy.ToString("F1")
+                );
             }
             else
             {
@@ -794,6 +817,9 @@ namespace BlackRece.LaSARTag.Geospatial
             _isInARView = !enable;
             ARViewCanvas.SetActive(!enable);
             ARGameCanvas.SetActive(enable);
+            var shooter = SessionOrigin.GetComponent<GeoShooter>();
+            shooter.enabled = enable;
+            shooter._cam = SessionOrigin.GetComponent<Camera>();
         }
 
         private IEnumerator AvailabilityCheck()
@@ -966,12 +992,18 @@ namespace BlackRece.LaSARTag.Geospatial
             {
                 return;
             }
+            
+            
+            var camPos = _Camera == null 
+                    ? new Vector3()
+                    : _Camera.transform.position;
 
             var pose = EarthManager.EarthState == EarthState.Enabled &&
                 EarthManager.EarthTrackingState == TrackingState.Tracking ?
                 EarthManager.CameraGeospatialPose : new GeospatialPose();
             var supported = EarthManager.IsGeospatialModeSupported(GeospatialMode.Enabled);
             DebugText.text =
+                $"Camera Position: {camPos.x:F2}, {camPos.y:F2}, {camPos.z:F2}\n" +
                 $"IsReturning: {_isReturning}\n" +
                 $"IsLocalizing: {_isLocalizing}\n" +
                 $"SessionState: {ARSession.state}\n" +

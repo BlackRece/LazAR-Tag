@@ -19,16 +19,16 @@ namespace BlackRece.ProjectilePooler
             return instance;
         }
         
-        public GameObject GetGameObject(bool bAddedObjects = false) {
+        public GameObject GetGameObject(bool bHasAlreadyAddedObjects = false) {
             foreach (GameObject inactiveObject in _pool) 
                 if (!inactiveObject.activeSelf) 
                     return inactiveObject;
 
-            if (bAddedObjects)
+            if (bHasAlreadyAddedObjects)
                 throw new Exception("ERROR: Can't return an inactive object!");
                 
             IncreasePool();
-            return GetGameObject(true);
+            return GetGameObject(!bHasAlreadyAddedObjects);
         }
         
         private void IncreasePool()

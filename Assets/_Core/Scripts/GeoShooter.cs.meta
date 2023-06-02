@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e4f5733208913b0468b2a5e514eb71a6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _cam: {instanceID: 0}
+  - _ProjectilePrefab: {fileID: 8951578067776223834, guid: 78bb1d33c9bce3346999b03ca447ebce,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
